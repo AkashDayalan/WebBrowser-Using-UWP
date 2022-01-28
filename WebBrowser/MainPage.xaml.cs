@@ -5,6 +5,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -12,6 +14,12 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using muxc = Microsoft.UI.Xaml.Controls;
+using static Windows.Web.Http.HttpClient;
+using System.Diagnostics;
+using Windows.UI.Xaml.Media.Imaging;
+using System.Threading.Tasks;
+
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -22,6 +30,7 @@ namespace WebBrowser
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        int settingPageCount = 0;
         public MainPage()
         {
             this.InitializeComponent();
@@ -71,7 +80,29 @@ namespace WebBrowser
 
         private void settingsMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            this.Frame.Navigate(typeof(SettingsPage));
+            //this.Frame.Navigate(typeof(SettingsPage));
+            if (settingPageCount == 0)
+            {
+                AddSettingsTab();
+                settingPageCount++;
+            }
+        }
+
+        private void AddSettingsTab()
+        {
+            var settingsTab = new muxc.TabViewItem();
+
+            settingsTab.Header = "Settings";
+            settingsTab.Name = "Settings";
+            settingsTab.IconSource = new muxc.SymbolIconSource() { Symbol = Symbol.Setting};
+
+            Frame frame = new Frame();
+            settingsTab.Content = frame;
+            frame.Navigate(typeof(SettingsPage));
+
+            TabControl.TabItems.Add(settingsTab);
+            TabControl.SelectedItem = settingsTab;
+
         }
 
         private void MainBrowserWindow_Loading(FrameworkElement sender, object args)
@@ -86,8 +117,7 @@ namespace WebBrowser
 
         private void webBrowser_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            browserProgress.IsEnabled = false;
-            browserProgress.IsIndeterminate = false;
+            browserProgress.IsActive = false;
             try
             {
                 statusText.Text = webBrowser.Source.AbsoluteUri;
@@ -103,12 +133,65 @@ namespace WebBrowser
             {
 
             }
+            bool isSSL;
+            if(webBrowser.Source.AbsoluteUri.Contains("https"))
+            {
+                isSSL = true;
+                //Change icon image
+                sslIcon.FontFamily = new FontFamily("Segoe MDL2 Assets");
+                sslIcon.Glyph = "\xE72E";
+                ToolTip toolTip = new ToolTip();
+                toolTip.Content = "This website has a SSL certificate";
+                ToolTipService.SetToolTip(sslButton, toolTip);
+            }
+            else
+            {
+                isSSL = false;
+                //Change icon image
+                sslIcon.FontFamily = new FontFamily("Segoe MDL2 Assets");
+                sslIcon.Glyph = "\xE785";
+                ToolTip toolTip = new ToolTip();
+                toolTip.Content = "This website is unsafe and doesn't have a SSL certificate";
+                ToolTipService.SetToolTip(sslButton, toolTip);
+            }
         }
 
         private void webBrowser_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
-            browserProgress.IsEnabled = true;
-            browserProgress.IsIndeterminate = true;
+            browserProgress.IsActive = true;
+            
+        }
+
+        private void TabControl_AddTabButtonClick(muxc.TabView sender, Object args)
+        {
+            var newTab = new muxc.TabViewItem();
+
+            newTab.IconSource = new muxc.SymbolIconSource() { Symbol = Symbol.Document };
+            newTab.Header = "Blank Page";
+
+            WebView webView = new WebView();
+
+            newTab.Content = webView;
+
+            webView.Navigate(new Uri("https://www.google.co.in"));
+            sender.TabItems.Add(newTab);
+            sender.SelectedItem = newTab;
+
+        }
+
+        private void TabControl_TabCloseRequested(muxc.TabView sender, muxc.TabViewTabCloseRequestedEventArgs args)
+        {
+            sender.TabItems.Remove(args.Tab);
+            if(args.Tab.Name == "Settings")
+            {
+                settingPageCount = 0;
+            }
+        }
+
+        private void searchButton_Click(object sender, RoutedEventArgs e)
+        {
+            //Search
+            Search();
         }
     }
 }

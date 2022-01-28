@@ -5,6 +5,7 @@
     xmlns:local="using:WebBrowser"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{StaticResource wbBackground}"
     x:Name="MainBrowserWindow" Loading="MainBrowserWindow_Loading">
@@ -15,7 +16,6 @@
             <RowDefinition Height="32"/>
             <!-- Title Bar Row Definition-->
             <RowDefinition Height="40"/>
-            <RowDefinition Height="5"/>
             <RowDefinition/>
             <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
@@ -27,8 +27,11 @@
             <!--Title for Grid-->
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="25"/>
                 <!-- Navigation buttons col def-->
                 <ColumnDefinition/>
+                <!-- Search Button-->
+                <ColumnDefinition Width="50"/>
                 <!-- Search Bar col def-->
                 <ColumnDefinition/>
                 <!-- Settings col def-->
@@ -50,11 +53,22 @@
                 </Button>
             </StackPanel>
 
-            <!-- Search Bar-->
-            <TextBox x:Name="SearchBar" Grid.Column="1" TextWrapping="NoWrap" PlaceholderText="Search..." Height="25" VerticalContentAlignment="Center" BorderThickness="0" KeyDown="SearchBar_KeyDown"/>
+            <!-- SSL Icon-->
+            <Button x:Name="sslButton" Grid.Column="1" Padding="0" Background="{x:Null}" ToolTipService.ToolTip="">
+                <FontIcon x:Name="sslIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xE72E;" Grid.Column="1"/>
+            </Button>
 
+
+            <!-- Search Bar-->
+            <TextBox x:Name="SearchBar" Grid.Column="2" TextWrapping="NoWrap" PlaceholderText="Search..." Height="30" VerticalContentAlignment="Center" BorderThickness="0" KeyDown="SearchBar_KeyDown"/>
+
+            <!-- Search Button-->
+            <Button x:Name="searchButton" Grid.Column="3" Background="{x:Null}" VerticalAlignment="Center" HorizontalAlignment="Center" Click="searchButton_Click">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE721;" />
+            </Button>
+            
             <!-- Settings Flyout-->
-            <Button x:Name="MenuFlyoutBtn" Grid.Column="2" HorizontalAlignment="Right" Margin="10,0" Background="{x:Null}" Foreground="{StaticResource wbLightGrey}" BorderThickness="0">
+            <Button x:Name="MenuFlyoutBtn" Grid.Column="4" HorizontalAlignment="Right" Margin="10,0" Background="{x:Null}" Foreground="{StaticResource wbLightGrey}" BorderThickness="0">
                 <Button.Flyout>
                     <MenuFlyout>
                         <MenuFlyoutItem x:Name="settingsMenuItem" Text="Settings" Click="settingsMenuItem_Click">
@@ -70,15 +84,34 @@
 
         </Grid>
         <!-- Progress Bar-->
-        <ProgressBar x:Name="browserProgress" Grid.Row="2" Height="5" IsIndeterminate="False" IsEnabled="False"/>
+        <!--<ProgressBar x:Name="browserProgress" Grid.Row="2" Height="5" IsIndeterminate="False" IsEnabled="False"/>-->
 
-        <!-- Web View-->
-        <WebView x:Name="webBrowser" Source="http://www.google.co.in" Grid.Row="3" Loading="webBrowser_Loading"  NavigationCompleted="webBrowser_NavigationCompleted" NavigationStarting="webBrowser_NavigationStarting">
+        <muxc:TabView x:Name="TabControl" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Background="{StaticResource wbBackground}" AddTabButtonClick="TabControl_AddTabButtonClick" TabCloseRequested="TabControl_TabCloseRequested">
+            <muxc:TabView.TabStripHeader>
+                <Grid>
+                    <!-- Progress Ring-->
+                    <ProgressRing x:Name="browserProgress" Margin="10,0" IsActive="True" Foreground="{StaticResource wbLightGrey}"/>
+                </Grid>
+            </muxc:TabView.TabStripHeader>
+            <muxc:TabView.TabStripFooter>
+                <Grid>
+                    
+                </Grid>
+            </muxc:TabView.TabStripFooter>
+            <muxc:TabView.TabItems>
+                <muxc:TabViewItem Header="Blank Page">
+                    <muxc:TabViewItem.IconSource>
+                        <muxc:SymbolIconSource Symbol="Add"/>
+                    </muxc:TabViewItem.IconSource>
+                    <WebView x:Name="webBrowser" Visibility="Visible" Source="http://www.google.co.in" Grid.Row="3" Loading="webBrowser_Loading"  NavigationCompleted="webBrowser_NavigationCompleted" NavigationStarting="webBrowser_NavigationStarting">
 
-        </WebView>
-
+                    </WebView>
+                </muxc:TabViewItem>
+            </muxc:TabView.TabItems>
+        </muxc:TabView>
+    
         <!-- Status Text-->
-        <TextBlock x:Name="statusText" Grid.Row="4" VerticalAlignment="Center" Margin="10,0" Foreground="{StaticResource wbDarkTextColor}"/>
+        <TextBlock x:Name="statusText" Grid.Row="3" VerticalAlignment="Center" Margin="10,0" Foreground="{StaticResource wbDarkTextColor}"/>
     </Grid>
 
 </Page>
